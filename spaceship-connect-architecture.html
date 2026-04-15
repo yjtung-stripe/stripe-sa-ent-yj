@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spaceship / Alf — Connect Architecture &amp; Fund Flow Reference</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;background:#f1f5f9;min-height:100vh;padding:32px 24px;color:#1e293b}
+.wrap{max-width:1320px;margin:0 auto;background:white;border-radius:16px;padding:36px 48px 48px;box-shadow:0 2px 8px rgba(0,0,0,.07),0 8px 32px rgba(0,0,0,.06)}
+
+/* ── Typography ── */
+.page-title{font-size:20px;font-weight:700;color:#0f172a;display:flex;align-items:center;gap:10px}
+.page-title .logo-mark{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#6366f1;color:white;font-size:14px;font-weight:800}
+.page-sub{font-size:13.5px;color:#64748b;margin-top:8px;line-height:1.55}
+.meta-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;margin-bottom:28px}
+.meta-tag{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid}
+.meta-confirmed{background:#dcfce7;color:#15803d;border-color:#86efac}
+.meta-date{background:#f0f9ff;color:#0369a1;border-color:#bae6fd}
+.meta-phase{background:#fef3c7;color:#92400e;border-color:#fde68a}
+
+.section-label{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#94a3b8;margin-bottom:16px;margin-top:40px;display:flex;align-items:center;gap:10px}
+.section-label::after{content:'';flex:1;height:1px;background:#e2e8f0}
+
+h2{font-size:15px;font-weight:700;color:#0f172a;margin-bottom:6px}
+h3{font-size:13px;font-weight:700;color:#334155;margin-bottom:8px}
+.section-desc{font-size:12.5px;color:#64748b;margin-bottom:18px;line-height:1.55;max-width:860px}
+
+/* ── Monospace ── */
+code,.mono{font-family:'SF Mono','Fira Code','Cascadia Code','Courier New',monospace;font-size:11.5px;background:#f1f5f9;padding:1px 6px;border-radius:4px;color:#334155;border:1px solid #e2e8f0}
+
+/* ── Architecture Stack ── */
+.arch-stack{display:flex;flex-direction:column;gap:0;margin-bottom:28px;max-width:680px}
+.arch-row{display:flex;align-items:stretch;border:1.5px solid #e2e8f0;border-bottom:none;overflow:hidden}
+.arch-row:first-child{border-radius:12px 12px 0 0}
+.arch-row:last-child{border-bottom:1.5px solid #e2e8f0;border-radius:0 0 12px 12px}
+.arch-label{width:160px;min-width:160px;padding:12px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b;background:#f8fafc;border-right:1.5px solid #e2e8f0;display:flex;align-items:center}
+.arch-value{flex:1;padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:#0f172a}
+.arch-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.pill-green{background:#dcfce7;color:#15803d}
+.pill-blue{background:#dbeafe;color:#1d4ed8}
+.pill-violet{background:#ede9fe;color:#6d28d9}
+.pill-amber{background:#fef3c7;color:#92400e}
+.pill-slate{background:#f1f5f9;color:#475569}
+.pill-rose{background:#ffe4e6;color:#9f1239}
+
+.arch-note{font-size:11px;color:#64748b;font-weight:400;margin-left:6px}
+
+/* ── Flow Diagram ── */
+.flow-container{margin:24px 0 32px;overflow-x:auto}
+.flow-diagram{display:flex;align-items:flex-start;gap:0;min-width:900px;padding:4px 0}
+.flow-entity{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:120px}
+.flow-box{border-radius:10px;padding:12px 16px;text-align:center;font-size:11px;font-weight:700;min-width:110px;line-height:1.4;border:2px solid}
+.flow-buyer{background:#eff6ff;color:#1d4ed8;border-color:#93c5fd}
+.flow-seller{background:#f0fdf4;color:#15803d;border-color:#86efac}
+.flow-platform{background:#faf5ff;color:#7c3aed;border-color:#c4b5fd}
+.flow-stripe{background:#f1f5f9;color:#475569;border-color:#cbd5e1}
+.flow-sublabel{font-size:10px;font-weight:400;color:#94a3b8;margin-top:2px}
+.flow-arrow{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 4px;min-width:100px}
+.flow-arrow-line{width:100%;height:2px;position:relative;margin:4px 0}
+.flow-arrow-line::after{content:'';position:absolute;right:-1px;top:-4px;border:5px solid transparent;border-left-color:currentColor}
+.flow-arrow-line.arrow-right{background:#16a34a}
+.flow-arrow-line.arrow-right::after{border-left-color:#16a34a}
+.flow-arrow-line.arrow-left{background:#dc2626;direction:rtl}
+.flow-arrow-line.arrow-left::after{right:auto;left:-1px;border-left-color:transparent;border-right-color:#dc2626}
+.flow-arrow-line.arrow-up{background:#6366f1}
+.flow-arrow-line.arrow-up::after{border-left-color:#6366f1}
+.flow-arrow-text{font-size:10px;font-weight:600;color:#475569;text-align:center;line-height:1.3;white-space:nowrap}
+.flow-arrow-amt{font-family:'SF Mono','Fira Code','Courier New',monospace;font-size:11px;font-weight:700;display:block}
+
+/* ── Scenario Comparison Cards ── */
+.scenario-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px}
+.scenario-card{border-radius:12px;border:2px solid #e2e8f0;overflow:hidden;display:flex;flex-direction:column}
+.scenario-card.card-domestic{border-color:#86efac}
+.scenario-card.card-intl{border-color:#93c5fd}
+.scenario-card.card-cross{border-color:#fbbf24}
+.scenario-card.card-refund{border-color:#f9a8d4}
+.scenario-head{padding:14px 18px;font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.head-domestic{background:#f0fdf4;color:#15803d;border-bottom:1px solid #bbf7d0}
+.head-intl{background:#eff6ff;color:#1d4ed8;border-bottom:1px solid #bfdbfe}
+.head-cross{background:#fffbeb;color:#92400e;border-bottom:1px solid #fde68a}
+.head-refund{background:#fdf2f8;color:#9d174d;border-bottom:1px solid #fbcfe8}
+.scenario-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;background:rgba(0,0,0,.08)}
+.scenario-body{padding:16px 18px;flex:1;display:flex;flex-direction:column;gap:12px;font-size:12px;line-height:1.55;color:#374151}
+.scenario-body .step{display:flex;gap:10px;align-items:flex-start}
+.step-num{min-width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;flex-shrink:0;margin-top:1px}
+.step-num.sn-green{background:#16a34a}
+.step-num.sn-blue{background:#2563eb}
+.step-num.sn-amber{background:#d97706}
+.step-num.sn-rose{background:#e11d48}
+.step-content{flex:1}
+.step-content strong{color:#0f172a}
+
+/* ── Waterfall ── */
+.waterfall{margin:20px 0 24px;display:flex;flex-direction:column;gap:0;max-width:720px}
+.wf-row{display:flex;align-items:center;gap:0;border-bottom:1px solid #f1f5f9;padding:5px 0}
+.wf-label{width:210px;min-width:210px;font-size:11.5px;color:#475569;padding-right:12px}
+.wf-bar-area{flex:1;position:relative;height:26px}
+.wf-bar{position:absolute;height:100%;border-radius:4px;display:flex;align-items:center;padding:0 8px;font-family:'SF Mono','Fira Code','Courier New',monospace;font-size:10.5px;font-weight:700;white-space:nowrap;color:white;min-width:fit-content}
+.wf-green{background:#16a34a}
+.wf-red{background:#dc2626}
+.wf-amber{background:#d97706}
+.wf-blue{background:#2563eb}
+.wf-violet{background:#7c3aed}
+.wf-slate{background:#64748b}
+.wf-teal{background:#0d9488}
+.wf-connector{font-size:10px;color:#94a3b8;font-weight:500;margin-left:4px}
+
+/* ── Tables ── */
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:20px}
+th{padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;text-align:left;font-weight:700;color:#475569;font-size:11.5px}
+td{padding:10px 14px;border:1px solid #e2e8f0;vertical-align:middle;color:#374151}
+tr:hover td{background:#fafbfd}
+.tbl-mono td:nth-child(n+2){font-family:'SF Mono','Fira Code','Courier New',monospace;font-size:11.5px}
+
+/* Outcome cells */
+.cell-good{background:#f0fdf4;color:#15803d;font-weight:600}
+.cell-bad{background:#fef2f2;color:#991b1b;font-weight:600}
+.cell-warn{background:#fffbeb;color:#92400e;font-weight:600}
+.cell-neutral{background:#f8fafc;color:#475569}
+.cell-highlight{background:#eff6ff;color:#1d4ed8;font-weight:700}
+
+th.col-domestic{background:#f0fdf4;color:#15803d;border-bottom:2px solid #16a34a}
+th.col-intl{background:#eff6ff;color:#1d4ed8;border-bottom:2px solid #2563eb}
+th.col-cross{background:#fffbeb;color:#92400e;border-bottom:2px solid #d97706}
+
+/* ── Fee Stack ── */
+.fee-stack{display:flex;flex-direction:column;gap:3px;margin:24px 0 28px;max-width:700px}
+.fee-row{display:flex;align-items:center;gap:0;font-size:12px}
+.fee-name{width:250px;min-width:250px;padding:8px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-right:none;font-weight:600;color:#475569;border-radius:8px 0 0 8px}
+.fee-rate{width:160px;min-width:160px;padding:8px 12px;border:1px solid #e2e8f0;border-right:none;font-family:'SF Mono','Fira Code','Courier New',monospace;font-size:12px;font-weight:700;color:#0f172a;text-align:right}
+.fee-who{flex:1;padding:8px 12px;border:1px solid #e2e8f0;font-size:11px;font-weight:600;border-radius:0 8px 8px 0}
+.fee-seller{background:#f0fdf4;color:#15803d}
+.fee-platform{background:#faf5ff;color:#7c3aed}
+.fee-stripe{background:#f1f5f9;color:#475569}
+
+/* ── Lifecycle ── */
+.lifecycle{display:flex;gap:0;margin:20px 0 28px;overflow-x:auto}
+.lc-phase{flex:1;min-width:150px;text-align:center;padding:16px 14px;border:1.5px solid #e2e8f0;position:relative}
+.lc-phase:first-child{border-radius:12px 0 0 12px}
+.lc-phase:last-child{border-radius:0 12px 12px 0}
+.lc-phase:not(:first-child){border-left:none}
+.lc-phase .lc-icon{font-size:20px;margin-bottom:6px;display:block}
+.lc-phase .lc-title{font-size:11.5px;font-weight:700;color:#0f172a;margin-bottom:4px}
+.lc-phase .lc-detail{font-size:10.5px;color:#64748b;line-height:1.45}
+.lc-phase .lc-fee{font-family:'SF Mono','Fira Code','Courier New',monospace;font-size:11px;font-weight:700;display:block;margin-top:6px}
+.lc-phase.lc-green{background:#f0fdf4;border-color:#86efac}
+.lc-phase.lc-green .lc-fee{color:#15803d}
+.lc-phase.lc-amber{background:#fffbeb;border-color:#fde68a}
+.lc-phase.lc-amber .lc-fee{color:#92400e}
+.lc-phase.lc-slate{background:#f8fafc;border-color:#cbd5e1}
+.lc-phase.lc-slate .lc-fee{color:#64748b}
+.lc-phase.lc-rose{background:#fff1f2;border-color:#fda4af}
+.lc-phase.lc-rose .lc-fee{color:#9f1239}
+.lc-arrow{position:absolute;right:-9px;top:50%;transform:translateY(-50%);z-index:2;font-size:14px;color:#94a3b8;background:white;padding:2px}
+
+/* ── Comparison Bar ── */
+.compare-bars{display:flex;flex-direction:column;gap:14px;margin:20px 0 28px;max-width:700px}
+.cb-row{display:flex;flex-direction:column;gap:4px}
+.cb-label{font-size:11px;font-weight:600;color:#475569}
+.cb-track{height:28px;background:#f1f5f9;border-radius:6px;position:relative;overflow:hidden;display:flex}
+.cb-fill{height:100%;display:flex;align-items:center;padding:0 10px;font-family:'SF Mono','Fira Code','Courier New',monospace;font-size:10.5px;font-weight:700;color:white;border-radius:6px;white-space:nowrap}
+.cb-fill.fill-green{background:#16a34a}
+.cb-fill.fill-blue{background:#2563eb}
+.cb-fill.fill-violet{background:#7c3aed}
+.cb-fill.fill-red{background:#dc2626}
+.cb-fill.fill-amber{background:#d97706}
+.cb-fill.fill-slate{background:#94a3b8}
+.cb-tail{font-family:'SF Mono','Fira Code','Courier New',monospace;font-size:10px;color:#64748b;padding-left:8px;display:flex;align-items:center}
+
+/* ── Callout boxes ── */
+.callout{border-radius:10px;padding:14px 18px;margin:16px 0 20px;font-size:12px;line-height:1.55;display:flex;gap:10px;align-items:flex-start}
+.callout-icon{font-size:16px;flex-shrink:0;margin-top:-1px}
+.callout-green{background:#f0fdf4;border:1.5px solid #86efac;color:#15803d}
+.callout-amber{background:#fffbeb;border:1.5px solid #fde68a;color:#92400e}
+.callout-red{background:#fef2f2;border:1.5px solid #fca5a5;color:#991b1b}
+.callout-blue{background:#eff6ff;border:1.5px solid #93c5fd;color:#1e40af}
+.callout strong{color:inherit}
+
+/* ── Grid layout for side-by-side ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+
+/* ── Divider ── */
+.divider{border:none;border-top:2px solid #e2e8f0;margin:36px 0 8px}
+
+/* ── Footer ── */
+.footer{margin-top:32px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:10.5px;color:#94a3b8;display:flex;justify-content:space-between}
+
+@media(max-width:860px){
+  .scenario-grid{grid-template-columns:1fr}
+  .two-col{grid-template-columns:1fr}
+  .wrap{padding:24px 20px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- HEADER -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<h1 class="page-title">
+  <span class="logo-mark">S</span>
+  Spaceship / Alf — Connect Architecture &amp; Fund Flow Reference
+</h1>
+<p class="page-sub">
+  Spaceship (by Namecheap) is building <strong>Alf</strong> — an AI-powered SaaS e-commerce platform where globally distributed sellers
+  create online stores. Spaceship is US-based. Sellers connect their own Stripe accounts via OAuth and process payments directly.
+  Spaceship monetizes via <strong>processing fee markup</strong> (Buy Rate spread) and <strong>per-transaction application fees</strong>
+  on top of a <strong>$5/mo subscription</strong>. The architecture is designed so Spaceship has <em>minimal involvement</em> in payment
+  operations — Stripe manages risk, sellers manage their own refunds and disputes.
+</p>
+<div class="meta-row">
+  <span class="meta-tag meta-confirmed">Architecture Confirmed</span>
+  <span class="meta-tag meta-date">Updated Apr 14, 2026</span>
+  <span class="meta-tag meta-phase">Phase 2 — E-commerce Launch</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SECTION 1: CONFIRMED ARCHITECTURE STACK -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<div class="section-label">1 &nbsp; Confirmed Architecture</div>
+<h2>Integration Configuration (UA2)</h2>
+<p class="section-desc">
+  Every layer of this stack was validated in Phase 1 and reconfirmed on the Apr 14 call.
+  This is the right architecture — the remaining work is understanding <em>economics and edge cases</em>, not changing the design.
+</p>
+
+<div class="arch-stack">
+  <div class="arch-row">
+    <div class="arch-label">Account Type</div>
+    <div class="arch-value"><span class="arch-pill pill-green">Standard</span> via OAuth <span class="arch-note">— Seller is MoR. Full Stripe dashboard.</span></div>
+  </div>
+  <div class="arch-row">
+    <div class="arch-label">Charge Type</div>
+    <div class="arch-value"><span class="arch-pill pill-blue">Direct Charges</span> <span class="arch-note">— Funds land in seller's balance. Seller = Merchant of Record.</span></div>
+  </div>
+  <div class="arch-row">
+    <div class="arch-label">Risk Model</div>
+    <div class="arch-value"><span class="arch-pill pill-violet">Stripe Managed Risk (SMR)</span> <span class="arch-note">— Stripe owns fraud, disputes, negative balances.</span></div>
+  </div>
+  <div class="arch-row">
+    <div class="arch-label">Onboarding</div>
+    <div class="arch-value"><span class="arch-pill pill-slate">Stripe-Hosted (OAuth)</span> <span class="arch-note">— Stripe handles KYC. No sensitive data for Spaceship.</span></div>
+  </div>
+  <div class="arch-row">
+    <div class="arch-label">Pricing Model</div>
+    <div class="arch-value"><span class="arch-pill pill-amber">Buy Rate (IC+)</span> <code>0.025% + $0.02</code> <span class="arch-note">— Tier 1. Extremely low.</span></div>
+  </div>
+  <div class="arch-row">
+    <div class="arch-label">Monetization</div>
+    <div class="arch-value"><span class="arch-pill pill-green">Spread + App Fee</span> <span class="arch-note">— Retail ~2.9%+$0.30 to sellers. <code>application_fee_amount</code> per charge.</span></div>
+  </div>
+  <div class="arch-row">
+    <div class="arch-label">White-Label</div>
+    <div class="arch-value"><span class="arch-pill pill-slate">Not Required</span> <span class="arch-note">— Stripe branding acceptable. Confirmed on call.</span></div>
+  </div>
+</div>
+
+<div class="callout callout-green">
+  <span class="callout-icon">✓</span>
+  <div><strong>Why this architecture wins:</strong> Standard + Direct Charges + SMR is the only configuration where Stripe takes primary liability for fraud, disputes, and negative balances while giving sellers full dashboard access. Spaceship's #1 goal — minimal involvement — is fully satisfied. The ultra-low IC+ rate (0.025% + $0.02) gives ~2.875% + $0.28 of margin per domestic transaction.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SECTION 2: FUND FLOW DIAGRAM -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<hr class="divider">
+<div class="section-label">2 &nbsp; Fund Flow — $100 Transaction</div>
+<h2>How Money Moves on a Direct Charge</h2>
+<p class="section-desc">
+  The buyer pays the seller directly. Stripe deducts processing fees and the application fee at the transaction level.
+  Platform fees (volume, payout, SMR, etc.) are billed separately to Spaceship's platform balance.
+</p>
+
+<!-- Waterfall Breakdown -->
+<h3>$100.00 Domestic US Transaction — Fee Waterfall</h3>
+
+<div class="waterfall">
+  <div class="wf-row">
+    <div class="wf-label">Buyer pays</div>
+    <div class="wf-bar-area">
+      <div class="wf-bar wf-green" style="width:100%;left:0">$100.00</div>
+    </div>
+  </div>
+  <div class="wf-row">
+    <div class="wf-label">− Interchange (network)</div>
+    <div class="wf-bar-area">
+      <div class="wf-bar wf-slate" style="width:15%;left:0">−$1.60</div>
+      <span class="wf-connector" style="position:absolute;left:16%;top:5px">1.60% domestic avg</span>
+    </div>
+  </div>
+  <div class="wf-row">
+    <div class="wf-label">− IC+ Markup (Stripe)</div>
+    <div class="wf-bar-area">
+      <div class="wf-bar wf-slate" style="width:4%;left:0;min-width:70px">−$0.045</div>
+      <span class="wf-connector" style="position:absolute;left:10%;top:5px">0.025% + $0.02</span>
+    </div>
+  </div>
+  <div class="wf-row">
+    <div class="wf-label">− Application Fee (→ Spaceship)</div>
+    <div class="wf-bar-area">
+      <div class="wf-bar wf-violet" style="width:8%;left:0;min-width:60px">−$0.50</div>
+      <span class="wf-connector" style="position:absolute;left:10%;top:5px">0.5% example</span>
+    </div>
+  </div>
+  <div class="wf-row" style="margin-top:4px;border-top:2px solid #0f172a;padding-top:6px">
+    <div class="wf-label" style="font-weight:700;color:#0f172a">Seller receives (balance)</div>
+    <div class="wf-bar-area">
+      <div class="wf-bar wf-green" style="width:82%;left:0">$97.855</div>
+    </div>
+  </div>
+</div>
+
+<h3>Platform Fees Billed Separately to Spaceship</h3>
+<p class="section-desc">These are <strong>not</strong> deducted from the transaction. Stripe bills them to the platform balance at varying cadences.</p>
+
+<div class="fee-stack">
+  <div class="fee-row">
+    <div class="fee-name">SMR (per transaction)</div>
+    <div class="fee-rate">0.40%</div>
+    <div class="fee-who fee-platform">Spaceship pays</div>
+  </div>
+  <div class="fee-row">
+    <div class="fee-name">Connect Volume Fee (monthly)</div>
+    <div class="fee-rate">0.25%</div>
+    <div class="fee-who fee-platform">Spaceship pays</div>
+  </div>
+  <div class="fee-row">
+    <div class="fee-name">Standard Payout Fee (per payout)</div>
+    <div class="fee-rate">$0.20</div>
+    <div class="fee-who fee-platform">Spaceship pays</div>
+  </div>
+  <div class="fee-row">
+    <div class="fee-name">Active Account Fee (monthly)</div>
+    <div class="fee-rate">$1.75</div>
+    <div class="fee-who fee-platform">Spaceship pays</div>
+  </div>
+  <div class="fee-row">
+    <div class="fee-name">Account Initiation (one-time)</div>
+    <div class="fee-rate">$4.00</div>
+    <div class="fee-who fee-platform">Spaceship pays</div>
+  </div>
+</div>
+
+<div class="callout callout-amber">
+  <span class="callout-icon">⚠</span>
+  <div><strong>$4.00 Initiation Fee vs. $5/mo Subscription:</strong> This consumes 80% of Month 1 subscription revenue.
+  Jason is exploring reduction or removal with Nicole. This is the single biggest commercial blocker. At scale, all Connect fees are renegotiable via Namecheap's enterprise contract.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SECTION 3: CROSS-BORDER SCENARIO COMPARISON -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<hr class="divider">
+<div class="section-label">3 &nbsp; Cross-Border Fee Scenarios</div>
+<h2>How Geography Affects Fees on a $100 Direct Charge</h2>
+<p class="section-desc">
+  With Direct Charges, the <strong>seller is the Merchant of Record</strong>. Cross-border and FX fees depend on the relationship
+  between the <em>buyer's card-issuing country</em> and the <em>seller's settlement country</em> — <strong>not</strong> the platform's country.
+  Spaceship's US domicile only affects the application fee settlement (FX on the app fee when it lands in USD).
+</p>
+
+<div class="scenario-grid">
+  <!-- Domestic US -->
+  <div class="scenario-card card-domestic">
+    <div class="scenario-head head-domestic">
+      <span>Scenario A — Domestic (US → US)</span>
+      <span class="scenario-badge">Best Case</span>
+    </div>
+    <div class="scenario-body">
+      <div class="step"><span class="step-num sn-green">1</span><div class="step-content"><strong>Buyer:</strong> US cardholder pays <code>$100.00 USD</code></div></div>
+      <div class="step"><span class="step-num sn-green">2</span><div class="step-content"><strong>Seller:</strong> US-based, settles in <code>USD</code></div></div>
+      <div class="step"><span class="step-num sn-green">3</span><div class="step-content"><strong>Interchange:</strong> Domestic rate — <code>~1.60%</code></div></div>
+      <div class="step"><span class="step-num sn-green">4</span><div class="step-content"><strong>Cross-border fee:</strong> <span style="color:#15803d;font-weight:700">None</span></div></div>
+      <div class="step"><span class="step-num sn-green">5</span><div class="step-content"><strong>FX fee:</strong> <span style="color:#15803d;font-weight:700">None</span></div></div>
+      <div class="step"><span class="step-num sn-green">6</span><div class="step-content"><strong>App fee FX:</strong> <span style="color:#15803d;font-weight:700">None</span> — USD → USD</div></div>
+    </div>
+  </div>
+
+  <!-- Intra-country EUR -->
+  <div class="scenario-card card-intl">
+    <div class="scenario-head head-intl">
+      <span>Scenario B — Intra-Country (FR → FR, EUR)</span>
+      <span class="scenario-badge">Common Case</span>
+    </div>
+    <div class="scenario-body">
+      <div class="step"><span class="step-num sn-blue">1</span><div class="step-content"><strong>Buyer:</strong> France cardholder pays <code>€100.00 EUR</code></div></div>
+      <div class="step"><span class="step-num sn-blue">2</span><div class="step-content"><strong>Seller:</strong> France-based, settles in <code>EUR</code></div></div>
+      <div class="step"><span class="step-num sn-blue">3</span><div class="step-content"><strong>Interchange:</strong> EU domestic rate — <code>~0.30%</code> (regulated)</div></div>
+      <div class="step"><span class="step-num sn-blue">4</span><div class="step-content"><strong>Cross-border fee:</strong> <span style="color:#15803d;font-weight:700">None</span> — same country</div></div>
+      <div class="step"><span class="step-num sn-blue">5</span><div class="step-content"><strong>FX fee (seller):</strong> <span style="color:#15803d;font-weight:700">None</span> — EUR → EUR</div></div>
+      <div class="step"><span class="step-num sn-amber">6</span><div class="step-content"><strong>App fee FX:</strong> <span style="color:#92400e;font-weight:700">Yes</span> — EUR app fee → USD platform acct<br><span style="font-size:11px;color:#64748b">Spaceship absorbs FX on the application fee only</span></div></div>
+    </div>
+  </div>
+
+  <!-- Intra-country USD presentment -->
+  <div class="scenario-card card-cross">
+    <div class="scenario-head head-cross">
+      <span>Scenario C — Intra-Country (FR → FR, USD)</span>
+      <span class="scenario-badge">Edge Case</span>
+    </div>
+    <div class="scenario-body">
+      <div class="step"><span class="step-num sn-amber">1</span><div class="step-content"><strong>Buyer:</strong> France cardholder pays in <code>USD</code> (not localized)</div></div>
+      <div class="step"><span class="step-num sn-amber">2</span><div class="step-content"><strong>Seller:</strong> France-based, settles in <code>EUR</code></div></div>
+      <div class="step"><span class="step-num sn-amber">3</span><div class="step-content"><strong>Interchange:</strong> EU domestic — <code>~0.30%</code></div></div>
+      <div class="step"><span class="step-num sn-amber">4</span><div class="step-content"><strong>Cross-border fee:</strong> <span style="color:#15803d;font-weight:700">None</span> — same country, no border crossed</div></div>
+      <div class="step"><span class="step-num sn-amber">5</span><div class="step-content"><strong>FX fee (seller):</strong> <span style="color:#92400e;font-weight:700">Yes</span> — USD presentment → EUR settlement</div></div>
+      <div class="step"><span class="step-num sn-green">6</span><div class="step-content"><strong>App fee FX:</strong> <span style="color:#15803d;font-weight:700">None</span> — USD → USD platform acct</div></div>
+    </div>
+  </div>
+
+  <!-- True cross-border -->
+  <div class="scenario-card card-refund">
+    <div class="scenario-head head-refund">
+      <span>Scenario D — Cross-Border (US → FR, USD)</span>
+      <span class="scenario-badge">Highest Fees</span>
+    </div>
+    <div class="scenario-body">
+      <div class="step"><span class="step-num sn-rose">1</span><div class="step-content"><strong>Buyer:</strong> US cardholder pays <code>$100.00 USD</code></div></div>
+      <div class="step"><span class="step-num sn-rose">2</span><div class="step-content"><strong>Seller:</strong> France-based, settles in <code>EUR</code></div></div>
+      <div class="step"><span class="step-num sn-rose">3</span><div class="step-content"><strong>Interchange:</strong> International rate — <code>~1.50%+</code></div></div>
+      <div class="step"><span class="step-num sn-rose">4</span><div class="step-content"><strong>Cross-border fee:</strong> <span style="color:#991b1b;font-weight:700">Yes</span> — card country ≠ seller country</div></div>
+      <div class="step"><span class="step-num sn-rose">5</span><div class="step-content"><strong>FX fee (seller):</strong> <span style="color:#991b1b;font-weight:700">Yes</span> — USD → EUR conversion</div></div>
+      <div class="step"><span class="step-num sn-green">6</span><div class="step-content"><strong>App fee FX:</strong> <span style="color:#15803d;font-weight:700">None</span> — USD → USD platform acct</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Concrete outcomes table -->
+<h3>Concrete Outcomes: $100 Charge Across All Scenarios</h3>
+<table class="tbl-mono">
+  <thead>
+    <tr>
+      <th style="width:200px">Fee Component</th>
+      <th class="col-domestic" style="width:140px">A: US → US<br><span style="font-weight:400;font-size:10px">Domestic USD</span></th>
+      <th class="col-intl" style="width:140px">B: FR → FR<br><span style="font-weight:400;font-size:10px">Intra-country EUR</span></th>
+      <th style="width:140px;background:#fffbeb;color:#92400e;border-bottom:2px solid #d97706">C: FR → FR<br><span style="font-weight:400;font-size:10px">Intra-country USD</span></th>
+      <th style="width:140px;background:#fdf2f8;color:#9d174d;border-bottom:2px solid #e11d48">D: US → FR<br><span style="font-weight:400;font-size:10px">Cross-border USD</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Buyer pays</td>
+      <td>$100.00</td>
+      <td>€100.00</td>
+      <td>$100.00</td>
+      <td>$100.00</td>
+    </tr>
+    <tr>
+      <td>Interchange</td>
+      <td class="cell-good">−$1.60</td>
+      <td class="cell-good">−€0.30</td>
+      <td class="cell-good">−$0.30</td>
+      <td class="cell-bad">−$1.50</td>
+    </tr>
+    <tr>
+      <td>IC+ Markup</td>
+      <td>−$0.045</td>
+      <td>−€0.045</td>
+      <td>−$0.045</td>
+      <td>−$0.045</td>
+    </tr>
+    <tr>
+      <td>Cross-border fee</td>
+      <td class="cell-good">$0.00</td>
+      <td class="cell-good">€0.00</td>
+      <td class="cell-good">$0.00</td>
+      <td class="cell-bad">−$1.50</td>
+    </tr>
+    <tr>
+      <td>FX fee (seller)</td>
+      <td class="cell-good">$0.00</td>
+      <td class="cell-good">€0.00</td>
+      <td class="cell-warn">−$1.00</td>
+      <td class="cell-bad">−$1.00</td>
+    </tr>
+    <tr>
+      <td>Application fee (0.5%)</td>
+      <td>−$0.50</td>
+      <td>−€0.50</td>
+      <td>−$0.50</td>
+      <td>−$0.50</td>
+    </tr>
+    <tr style="border-top:2px solid #0f172a">
+      <td style="font-weight:700">Seller receives</td>
+      <td class="cell-highlight">$97.855</td>
+      <td class="cell-highlight">€99.155</td>
+      <td class="cell-warn">$98.155</td>
+      <td class="cell-bad">$95.455</td>
+    </tr>
+    <tr>
+      <td style="font-weight:700">Spaceship app fee FX?</td>
+      <td class="cell-good">No</td>
+      <td class="cell-warn">Yes (EUR→USD)</td>
+      <td class="cell-good">No</td>
+      <td class="cell-good">No</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-blue">
+  <span class="callout-icon">ℹ</span>
+  <div><strong>Key insight for Spaceship:</strong> Yevhen confirmed 99% of their sellers' transactions are domestic (buyer + seller same country).
+  For those transactions, <strong>no cross-border or FX fees apply to the seller</strong>. The only FX exposure is on Spaceship's application fee
+  when it settles to their USD platform account. A <strong>multi-currency platform account</strong> would eliminate even that.</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SECTION 4: REFUND MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<hr class="divider">
+<div class="section-label">4 &nbsp; Refund Mechanics — $100 Full Refund</div>
+<h2>What Happens When a Seller Refunds a $100 Charge</h2>
+<p class="section-desc">
+  With Direct Charges + Standard Accounts, the <strong>seller initiates refunds</strong> via their Stripe Dashboard.
+  Stripe debits <code>$100.00</code> from the seller's <em>pooled</em> balance (not tied to the specific transaction).
+  Several fees are <strong>non-refundable</strong>.
+</p>
+
+<div class="two-col">
+  <div>
+    <h3>Stage 1 — Original Payment</h3>
+    <div class="waterfall">
+      <div class="wf-row">
+        <div class="wf-label">Buyer pays</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-green" style="width:100%">$100.00</div></div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">− Interchange</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-slate" style="width:14%">−$1.60</div></div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">− IC+ Markup</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-slate" style="width:4%;min-width:60px">−$0.045</div></div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">− App Fee (→ Spaceship)</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-violet" style="width:6%;min-width:50px">−$0.50</div></div>
+      </div>
+      <div class="wf-row" style="border-top:2px solid #0f172a;padding-top:4px;margin-top:4px">
+        <div class="wf-label" style="font-weight:700">Seller balance</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-green" style="width:82%">$97.855</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <h3>Stage 2 — Full Refund</h3>
+    <div class="waterfall">
+      <div class="wf-row">
+        <div class="wf-label">Buyer receives back</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-green" style="width:100%">$100.00 ✓</div></div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">Interchange returned?</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-red" style="width:14%">No — $1.60</div></div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">IC+ Markup returned?</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-red" style="width:4%;min-width:70px">No — $0.045</div></div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">App Fee returned?</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-red" style="width:6%;min-width:70px">No — $0.50</div></div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">SMR adjusted?</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-red" style="width:5%;min-width:70px">No — $0.40</div></div>
+      </div>
+      <div class="wf-row" style="border-top:2px solid #991b1b;padding-top:4px;margin-top:4px">
+        <div class="wf-label" style="font-weight:700;color:#991b1b">Seller net loss</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-red" style="width:22%">−$2.145</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<table style="margin-top:16px">
+  <thead>
+    <tr>
+      <th>Fee Component</th>
+      <th>Refundable?</th>
+      <th>Who Absorbs</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Interchange ($1.60)</td>
+      <td class="cell-bad">No</td>
+      <td>Seller</td>
+      <td>Kept by card networks after settlement. <em>Avoidable only on true voids before settlement.</em></td>
+    </tr>
+    <tr>
+      <td>IC+ Markup ($0.045)</td>
+      <td class="cell-bad">No</td>
+      <td>Seller</td>
+      <td>Retained by Stripe after settlement.</td>
+    </tr>
+    <tr>
+      <td>Application Fee ($0.50)</td>
+      <td class="cell-warn">Platform controls</td>
+      <td>Retained by Spaceship</td>
+      <td>Not auto-refunded. Spaceship can opt to refund via <code style="font-size:10px">refund_application_fee: true</code></td>
+    </tr>
+    <tr>
+      <td>SMR ($0.40)</td>
+      <td class="cell-bad">No</td>
+      <td>Spaceship</td>
+      <td>Charged on original amount. Not adjusted on refund.</td>
+    </tr>
+    <tr>
+      <td>Refund amount ($100)</td>
+      <td>—</td>
+      <td>Seller's pooled balance</td>
+      <td>Debited from total available balance. If insufficient, Stripe debits seller's bank account.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-amber">
+  <span class="callout-icon">⚠</span>
+  <div><strong>Void vs. Refund:</strong> If a charge is <strong>voided before settlement</strong> (typically within the authorization window, ~24hrs),
+  interchange may be recoverable. After settlement, interchange is permanently kept by the card network. Spaceship should advise sellers
+  to cancel/void quickly when possible rather than refunding days later.</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SECTION 5: CONNECTED ACCOUNT LIFECYCLE -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<hr class="divider">
+<div class="section-label">5 &nbsp; Connected Account Lifecycle &amp; Fees</div>
+<h2>When Platform Fees Trigger — and When They Don't</h2>
+<p class="section-desc">
+  Platform fees are tied to <strong>account activity</strong>, not account existence. A connected account that is idle incurs zero fees.
+  The key trigger is a <strong>payout</strong> — any payout from the connected account's balance to a bank account in a given calendar month.
+</p>
+
+<div class="lifecycle">
+  <div class="lc-phase lc-green">
+    <span class="lc-icon">🔗</span>
+    <div class="lc-title">Seller Connects</div>
+    <div class="lc-detail">Via OAuth. Seller creates or links a Standard account to Spaceship.</div>
+    <span class="lc-fee">Fee: $0.00</span>
+    <span class="lc-arrow">→</span>
+  </div>
+  <div class="lc-phase lc-amber">
+    <span class="lc-icon">⚡</span>
+    <div class="lc-title">First Payout</div>
+    <div class="lc-detail">Account becomes "active." Initiation + Active Account fees both trigger.</div>
+    <span class="lc-fee">$4.00 + $1.75 = $5.75</span>
+    <span class="lc-arrow">→</span>
+  </div>
+  <div class="lc-phase lc-green">
+    <span class="lc-icon">💰</span>
+    <div class="lc-title">Active Month</div>
+    <div class="lc-detail">At least 1 payout in calendar month. Active Account Fee charged monthly.</div>
+    <span class="lc-fee">$1.75/mo + $0.20/payout</span>
+    <span class="lc-arrow">→</span>
+  </div>
+  <div class="lc-phase lc-slate">
+    <span class="lc-icon">💤</span>
+    <div class="lc-title">Inactive Month</div>
+    <div class="lc-detail">No payouts this month. Account stays connected. Zero fees.</div>
+    <span class="lc-fee">Fee: $0.00</span>
+    <span class="lc-arrow">→</span>
+  </div>
+  <div class="lc-phase lc-rose">
+    <span class="lc-icon">🔌</span>
+    <div class="lc-title">Disconnected</div>
+    <div class="lc-detail">Optional. Reconnection does NOT re-trigger $4 initiation fee.</div>
+    <span class="lc-fee">Fee: $0.00</span>
+  </div>
+</div>
+
+<div class="callout callout-green">
+  <span class="callout-icon">✓</span>
+  <div><strong>Subscription cancellation playbook:</strong> When a seller cancels their Alf subscription, Spaceship does <strong>not</strong> need to disconnect the account. If the seller stops taking payouts, all fees stop automatically. The balance remains in the seller's account. If the seller returns months later and reconnects to a new subscription, no initiation fee is re-charged.</div>
+</div>
+
+<div class="callout callout-red">
+  <span class="callout-icon">⚠</span>
+  <div><strong>CBSP Correction (Critical):</strong> Since June 2021, Standard accounts are governed by <strong>"Controlled By Single Platform"</strong> policy.
+  A Standard account can only be connected to <strong>one platform at a time</strong> (with <code>read_write</code> OAuth scope).
+  The prior Q&amp;A doc incorrectly stated balances are "shared across platforms." This is not possible. A seller must disconnect from Platform A (e.g., Wix) before connecting to Spaceship. Pre-existing balances from Wix remain in the seller's account but are the seller's money — not tied to any platform.
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SECTION 6: BUY RATE vs REV SHARE COMPARISON -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<hr class="divider">
+<div class="section-label">6 &nbsp; Buy Rate vs. Rev Share — Economic Comparison</div>
+<h2>Why Buy Rate Is the Recommended Model</h2>
+<p class="section-desc">
+  Spaceship's IC+ rate (<code>0.025% + $0.02</code>) is extraordinarily low — among the lowest of any Stripe customer.
+  This creates massive margin opportunity under Buy Rate that Rev Share cannot replicate. Rev Share at $5M Year 1 volume yields ~5 BPS.
+</p>
+
+<h3>Platform Revenue Per $100 Domestic Transaction</h3>
+<div class="compare-bars">
+  <div class="cb-row">
+    <div class="cb-label">Buy Rate: Spread + App Fee (Recommended)</div>
+    <div class="cb-track">
+      <div class="cb-fill fill-green" style="width:87%">$6.50 — Retail markup ($4.50) + App fee ($2.00)</div>
+    </div>
+  </div>
+  <div class="cb-row">
+    <div class="cb-label">Buy Rate: Spread Only (No App Fee)</div>
+    <div class="cb-track">
+      <div class="cb-fill fill-blue" style="width:60%">$4.50 — Spread between IC+ and 2.9%+$0.30</div>
+    </div>
+  </div>
+  <div class="cb-row">
+    <div class="cb-label">Rev Share: Application Fee Only</div>
+    <div class="cb-track">
+      <div class="cb-fill fill-violet" style="width:33%">$2.00 — App fee (Rev Share rate goes to Stripe)</div>
+    </div>
+  </div>
+  <div class="cb-row">
+    <div class="cb-label">Rev Share: Rev Share Only (5 BPS at $5M vol)</div>
+    <div class="cb-track">
+      <div class="cb-fill fill-slate" style="width:1%;min-width:80px">$0.05</div>
+      <span class="cb-tail">← Nearly invisible at this volume</span>
+    </div>
+  </div>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:220px">Dimension</th>
+      <th style="width:280px;background:#f0fdf4;color:#15803d;border-bottom:2px solid #16a34a">Buy Rate (Recommended)</th>
+      <th style="width:280px;background:#f8fafc;color:#475569;border-bottom:2px solid #94a3b8">Rev Share</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="font-weight:600">Pricing control</td>
+      <td class="cell-good">Full — Spaceship sets retail rate to sellers</td>
+      <td class="cell-neutral">None — Stripe sets standard rate</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">Platform gross per $100</td>
+      <td class="cell-good">~$6.50 (spread + app fee)</td>
+      <td class="cell-bad">~$0.05 (5 BPS rev share only)</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">Max Rev Share at $500M vol</td>
+      <td>N/A</td>
+      <td>40 BPS ($2M/year)</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">Surface ownership</td>
+      <td class="cell-good">Spaceship (Embedded Components)</td>
+      <td class="cell-neutral">Stripe-hosted</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">White-label compatible</td>
+      <td class="cell-good">Yes</td>
+      <td class="cell-warn">No — Stripe branding visible</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">Connect platform fees</td>
+      <td>All apply (initiation, active, volume, payout, SMR)</td>
+      <td>All apply — identical</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">Engineering complexity</td>
+      <td class="cell-warn">Medium — manage pricing, fee display</td>
+      <td class="cell-good">Low — Stripe handles everything</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">FX management</td>
+      <td class="cell-warn">Platform manages (multi-currency acct helps)</td>
+      <td class="cell-good">Stripe auto-localizes</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">Hybrid compatible</td>
+      <td colspan="2" style="text-align:center;font-size:11px;color:#64748b">Yes — can run both simultaneously. <strong>Not recommended at launch</strong> (see below).</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-amber">
+  <span class="callout-icon">⚠</span>
+  <div><strong>Hybrid approach deferred:</strong> Running both Buy Rate and Rev Share simultaneously is technically possible but requires
+  two separate charge-creation codepaths, two fee-display logics, and two reconciliation flows. At ~$5M Year 1 volume, the Rev Share leg
+  would generate ~<code>$2,500/year</code> — the engineering cost far exceeds this. <strong>Launch with Buy Rate only.</strong>
+  Re-evaluate when Spaceship opens a European entity or hits margin compression on specific corridors.</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SECTION 7: MONTHLY PLATFORM COST EXAMPLE -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<hr class="divider">
+<div class="section-label">7 &nbsp; Monthly P&amp;L Example</div>
+<h2>June 2026 Projection — $200K Connect Volume</h2>
+<p class="section-desc">
+  Modeled scenario: 200 Standard connected accounts, $200K total Connect volume, 200 payouts, 25 new accounts, 100 active accounts.
+</p>
+
+<table class="tbl-mono">
+  <thead>
+    <tr>
+      <th>Platform Fee</th>
+      <th>Calculation</th>
+      <th>Amount</th>
+      <th>When Billed</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Volume Fee</td>
+      <td>$200,000 × 0.25%</td>
+      <td>$500.00</td>
+      <td>At time of payout</td>
+    </tr>
+    <tr>
+      <td>Standard Payout Fee</td>
+      <td>200 payouts × $0.20</td>
+      <td>$40.00</td>
+      <td>At time of payout</td>
+    </tr>
+    <tr>
+      <td>Active Account Fee</td>
+      <td>100 active accounts × $1.75</td>
+      <td>$175.00</td>
+      <td>1st payout of month</td>
+    </tr>
+    <tr>
+      <td>Account Initiation</td>
+      <td>25 new accounts × $4.00</td>
+      <td>$100.00</td>
+      <td>1st payout of month</td>
+    </tr>
+    <tr>
+      <td>Stripe Managed Risk</td>
+      <td>$200,000 × 0.40%</td>
+      <td>$800.00</td>
+      <td>Per transaction</td>
+    </tr>
+    <tr style="border-top:2.5px solid #0f172a">
+      <td style="font-weight:700;font-size:13px">Total Platform Fees</td>
+      <td style="font-weight:700;color:#64748b">80.75 BPS effective</td>
+      <td style="font-weight:700;font-size:14px;color:#991b1b">$1,615.00</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="two-col" style="margin-top:8px">
+  <div>
+    <h3>Spaceship Revenue (Buy Rate + App Fee)</h3>
+    <div class="waterfall">
+      <div class="wf-row">
+        <div class="wf-label">Retail spread revenue</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-green" style="width:75%">~$5,600</div></div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">Application fees (0.5%)</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-violet" style="width:30%">$1,000</div></div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">− Platform fees</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-red" style="width:25%">−$1,615</div></div>
+      </div>
+      <div class="wf-row" style="border-top:2px solid #0f172a;margin-top:4px;padding-top:4px">
+        <div class="wf-label" style="font-weight:700">Net platform margin</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-teal" style="width:65%">~$4,985</div></div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <h3>If Rev Share Only (5 BPS)</h3>
+    <div class="waterfall">
+      <div class="wf-row">
+        <div class="wf-label">Rev share income</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-slate" style="width:3%;min-width:50px">$100</div></div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">Application fees (0.5%)</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-violet" style="width:30%">$1,000</div></div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">− Platform fees</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-red" style="width:25%">−$1,615</div></div>
+      </div>
+      <div class="wf-row" style="border-top:2px solid #0f172a;margin-top:4px;padding-top:4px">
+        <div class="wf-label" style="font-weight:700;color:#991b1b">Net platform margin</div>
+        <div class="wf-bar-area"><div class="wf-bar wf-red" style="width:2%;min-width:60px">−$515</div></div>
+      </div>
+    </div>
+    <div class="callout callout-red" style="margin-top:12px">
+      <span class="callout-icon">✗</span>
+      <div><strong>Rev Share alone is unprofitable</strong> at this volume. The 5 BPS rev share + app fees don't cover Connect platform fees.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SECTION 8: PHASED APPROACH -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<hr class="divider">
+<div class="section-label">8 &nbsp; Phased Approach</div>
+<h2>Recommended Launch Phases</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:100px">Phase</th>
+      <th style="width:200px">Scope</th>
+      <th style="width:140px">Timeline</th>
+      <th>Key Deliverables</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="arch-pill pill-green">Phase 2</span></td>
+      <td style="font-weight:600">E-commerce Launch</td>
+      <td><code>Apr–May 2026</code></td>
+      <td>Buy Rate + Direct Charges + Checkout Sessions + <code>application_fee_amount</code>. US and straightforward intl corridors.</td>
+    </tr>
+    <tr>
+      <td><span class="arch-pill pill-blue">Phase 2.5</span></td>
+      <td style="font-weight:600">FX Optimization</td>
+      <td><code>Q3 2026</code></td>
+      <td>Multi-currency platform account. Fee transparency page for sellers. Instant Payouts monetization.</td>
+    </tr>
+    <tr>
+      <td><span class="arch-pill pill-violet">Phase 3</span></td>
+      <td style="font-weight:600">Scale &amp; Expand</td>
+      <td><code>2027+</code></td>
+      <td>Evaluate European entity. Re-evaluate Rev Share for specific corridors. Payment Element + Adaptive Pricing for Namecheap core.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- FOOTER -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<div class="footer">
+  <span>Spaceship / Alf Connect Architecture Reference — Prepared for YJ Tung (SA) &amp; Jason Dong (AE)</span>
+  <span>Updated <code style="background:none;border:none;padding:0">2026-04-14T22:14:00 UTC</code> · Confidential — Stripe Internal</span>
+</div>
+
+</div><!-- /.wrap -->
+</body>
+</html>
